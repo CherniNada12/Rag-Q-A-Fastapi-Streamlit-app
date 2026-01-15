@@ -354,7 +354,7 @@ docker-compose logs -f
 ### Métriques
 
 Accéder aux métriques via :
-- http://localhost:8000/metrics (si configuré)
+- http://localhost:8000/metrics 
 
 ## 👥 Auteurs
 
