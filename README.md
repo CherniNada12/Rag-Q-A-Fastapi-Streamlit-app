@@ -1,0 +1,419 @@
+# 🤖 Système RAG - FastAPI + Streamlit
+
+Système de Question-Réponse basé sur des documents utilisant Retrieval-Augmented Generation (RAG), FastAPI et Streamlit.
+
+## 📋 Table des matières
+
+- [Caractéristiques](#caractéristiques)
+- [Architecture](#architecture)
+- [Installation](#installation)
+- [Utilisation](#utilisation)
+- [API Documentation](#api-documentation)
+- [Déploiement](#déploiement)
+- [Tests](#tests)
+
+## ✨ Caractéristiques
+
+- 📤 **Upload de documents** (PDF, DOCX, TXT)
+- 🔪 **Chunking intelligent** avec overlap configurable
+- 🧠 **Embeddings** avec Sentence Transformers
+- 🔍 **Recherche sémantique** via FAISS
+- 🤖 **Génération de réponses** avec LLM
+- 🌐 **API REST** avec FastAPI
+- 🎨 **Interface utilisateur** avec Streamlit
+- 💾 **Persistance** de l'index FAISS
+- 🐳 **Dockerisé** pour déploiement facile
+
+## 🏗 Architecture
+
+```
+┌─────────────┐
+│  Documents  │
+│ (PDF/DOCX)  │
+└──────┬──────┘
+       │
+       ▼
+┌─────────────┐
+│  Ingestion  │
+│  & Chunking │
+└──────┬──────┘
+       │
+       ▼
+┌─────────────┐
+│  Embeddings │
+│  (SBERT)    │
+└──────┬──────┘
+       │
+       ▼
+┌─────────────┐
+│    FAISS    │
+│    Index    │
+└──────┬──────┘
+       │
+       ▼
+┌─────────────┐      ┌──────────────┐
+│  Retrieval  │─────▶│  Generation  │
+└─────────────┘      │     (LLM)    │
+                     └───────┬──────┘
+                             │
+                             ▼
+                     ┌──────────────┐
+                     │   Réponse    │
+                     └──────────────┘
+```
+
+## 🚀 Installation
+
+### Prérequis
+
+- Python 3.9+
+- pip
+- (Optionnel) Docker et Docker Compose
+
+### Installation locale
+
+1. **Cloner le repository**
+
+```bash
+git clone https://github.com/votre-username/rag-fastapi-streamlit.git
+cd rag-fastapi-streamlit
+```
+
+2. **Créer l'environnement virtuel**
+
+```bash
+python -m venv venv
+source venv/bin/activate  # Linux/Mac
+# ou
+venv\Scripts\activate  # Windows
+```
+
+3. **Installer les dépendances**
+
+```bash
+pip install -r requirements.txt
+```
+
+4. **Configurer les variables d'environnement**
+
+Copier `.env.example` vers `.env` et ajuster les valeurs :
+
+```bash
+cp .env.example .env
+```
+
+5. **Créer la structure des répertoires**
+
+```bash
+mkdir -p data/{documents,chunks,index}
+```
+
+## 📖 Utilisation
+
+### Mode développement (local)
+
+#### 1. Lancer l'API FastAPI
+
+```bash
+cd src/api
+uvicorn main:app --reload --port 8000
+```
+
+L'API sera accessible sur : http://localhost:8000
+
+Documentation interactive : http://localhost:8000/docs
+
+#### 2. Lancer l'interface Streamlit
+
+Dans un nouveau terminal :
+
+```bash
+cd src/frontend
+streamlit run app.py
+```
+
+L'interface sera accessible sur : http://localhost:8501
+
+### Mode Docker
+
+#### 1. Construire et lancer avec Docker Compose
+
+```bash
+docker-compose up --build
+```
+
+Services disponibles :
+- API : http://localhost:8000
+- Frontend : http://localhost:8501
+
+#### 2. Arrêter les services
+
+```bash
+docker-compose down
+```
+
+## 🔌 API Documentation
+
+### Endpoints principaux
+
+#### 1. Health Check
+
+```bash
+GET /health
+```
+
+Retourne le statut de l'API et des informations sur l'index.
+
+#### 2. Upload de document
+
+```bash
+POST /upload_document
+Content-Type: multipart/form-data
+
+{
+  "file": <fichier>
+}
+```
+
+#### 3. Query (Question)
+
+```bash
+POST /query
+Content-Type: application/json
+
+{
+  "question": "Votre question ici",
+  "top_k": 5
+}
+```
+
+**Réponse :**
+
+```json
+{
+  "answer": "La réponse générée...",
+  "sources": [...],
+  "context_used": 3,
+  "retrieved_chunks": [...]
+}
+```
+
+#### 4. Liste des documents
+
+```bash
+GET /list_documents
+```
+
+#### 5. Supprimer l'index
+
+```bash
+DELETE /clear_index
+```
+
+### Exemples avec curl
+
+```bash
+# Health check
+curl http://localhost:8000/health
+
+# Upload document
+curl -X POST "http://localhost:8000/upload_document" \
+  -F "file=@document.pdf"
+
+# Poser une question
+curl -X POST "http://localhost:8000/query" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "question": "Quel est le sujet principal ?",
+    "top_k": 5
+  }'
+```
+
+## 📓 Notebooks
+
+Trois notebooks Jupyter sont fournis pour explorer le pipeline :
+
+1. **01_Data_Ingestion_and_Chunking.ipynb**
+   - Extraction de texte
+   - Découpage en chunks
+   - Analyse des documents
+
+2. **02_Embedding_and_FAISS_Index.ipynb**
+   - Génération d'embeddings
+   - Création de l'index FAISS
+   - Tests de similarité
+
+3. **03_Test_RAG_Pipeline.ipynb**
+   - Pipeline complet
+   - Tests de questions-réponses
+   - Évaluation des performances
+
+### Lancer les notebooks
+
+```bash
+jupyter notebook notebooks/
+```
+
+## 🧪 Tests
+
+### Lancer les tests unitaires
+
+```bash
+pytest tests/ -v
+```
+
+### Tests spécifiques
+
+```bash
+# Tests d'embeddings
+pytest tests/test_embeddings.py
+
+# Tests de retrieval
+pytest tests/test_retrieval.py
+
+# Tests de génération
+pytest tests/test_generation.py
+
+# Tests API
+pytest tests/test_api.py
+```
+
+## ⚙️ Configuration
+
+### Fichier `.env`
+
+```env
+# Chemins
+DATA_DIR=./data
+DOCUMENTS_DIR=./data/documents
+CHUNKS_DIR=./data/chunks
+INDEX_DIR=./data/index
+
+# RAG
+CHUNK_SIZE=500
+CHUNK_OVERLAP=50
+TOP_K_RESULTS=5
+
+# Modèles
+EMBEDDING_MODEL=sentence-transformers/all-MiniLM-L6-v2
+LLM_MODEL=gpt2
+
+# API
+API_HOST=0.0.0.0
+API_PORT=8000
+
+# OpenAI (optionnel)
+OPENAI_API_KEY=your-key-here
+```
+
+## 🐳 Déploiement
+
+### Déploiement sur serveur VPS
+
+1. **Cloner le projet sur le serveur**
+
+```bash
+git clone https://github.com/votre-username/rag-fastapi-streamlit.git
+cd rag-fastapi-streamlit
+```
+
+2. **Configurer les variables d'environnement**
+
+```bash
+nano .env
+```
+
+3. **Lancer avec Docker Compose**
+
+```bash
+docker-compose up -d
+```
+
+4. **Vérifier les logs**
+
+```bash
+docker-compose logs -f
+```
+
+### Déploiement avec Nginx (reverse proxy)
+
+Configuration Nginx pour l'API et Streamlit :
+
+```nginx
+server {
+    listen 80;
+    server_name votre-domaine.com;
+
+    # API
+    location /api/ {
+        proxy_pass http://localhost:8000/;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+    }
+
+    # Streamlit
+    location / {
+        proxy_pass http://localhost:8501;
+        proxy_http_version 1.1;
+        proxy_set_header Upgrade $http_upgrade;
+        proxy_set_header Connection "upgrade";
+        proxy_set_header Host $host;
+    }
+}
+```
+
+## 📊 Monitoring
+
+### Logs
+
+```bash
+# Logs de l'API
+docker-compose logs api
+
+# Logs du frontend
+docker-compose logs frontend
+
+# Tous les logs
+docker-compose logs -f
+```
+
+### Métriques
+
+Accéder aux métriques via :
+- http://localhost:8000/metrics (si configuré)
+
+## 🤝 Contribution
+
+Les contributions sont les bienvenues ! 
+
+1. Fork le projet
+2. Créer une branche (`git checkout -b feature/AmazingFeature`)
+3. Commit (`git commit -m 'Add AmazingFeature'`)
+4. Push (`git push origin feature/AmazingFeature`)
+5. Ouvrir une Pull Request
+
+## 📝 License
+
+Ce projet est sous licence MIT.
+
+## 👥 Auteurs
+
+- Votre Nom - [@votre-username](https://github.com/votre-username)
+
+## 🙏 Remerciements
+
+- [FastAPI](https://fastapi.tiangolo.com/)
+- [Streamlit](https://streamlit.io/)
+- [Sentence Transformers](https://www.sbert.net/)
+- [FAISS](https://github.com/facebookresearch/faiss)
+- [Hugging Face](https://huggingface.co/)
+
+## 📞 Support
+
+Pour toute question ou problème :
+- Ouvrir une [issue](https://github.com/votre-username/rag-fastapi-streamlit/issues)
+- Email : votre-email@example.com
+
+---
+
+**⭐ N'oubliez pas de mettre une étoile si ce projet vous a été utile !**
