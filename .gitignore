@@ -1,0 +1,12 @@
+
+# Environnement virtuel
+venv/
+
+# Dossiers générés
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# Données / index si nécessaire
+data/
