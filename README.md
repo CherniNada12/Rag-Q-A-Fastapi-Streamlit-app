@@ -1,6 +1,12 @@
-# 🤖 Système RAG - FastAPI + Streamlit
+**##🎓 RAG – Learning Assistant Spécialisé**
+🧠 Domaine : Éducation / Formation numérique
 
-Système de Question-Réponse basé sur des documents utilisant Retrieval-Augmented Generation (RAG), FastAPI et Streamlit.
+FastAPI + Streamlit
+
+Assistant pédagogique intelligent basé sur des documents éducatifs utilisant Retrieval-Augmented Generation (RAG), exposé via FastAPI et accessible par une interface Streamlit.
+## 🎯 Objectif pédagogique
+
+Ce projet vise à développer un Learning Assistant spécialisé, capable d’accompagner les apprenants en répondant à leurs questions uniquement à partir de supports pédagogiques fournis (cours, polycopiés, FAQ, documents PDF/TXT).
 
 ## 📋 Table des matières
 
@@ -27,39 +33,40 @@ Système de Question-Réponse basé sur des documents utilisant Retrieval-Augmen
 ## 🏗 Architecture
 
 ```
-┌─────────────┐
-│  Documents  │
-│ (PDF/DOCX)  │
-└──────┬──────┘
-       │
-       ▼
-┌─────────────┐
-│  Ingestion  │
-│  & Chunking │
-└──────┬──────┘
-       │
-       ▼
-┌─────────────┐
-│  Embeddings │
-│  (SBERT)    │
-└──────┬──────┘
-       │
-       ▼
-┌─────────────┐
-│    FAISS    │
-│    Index    │
-└──────┬──────┘
-       │
-       ▼
-┌─────────────┐      ┌──────────────┐
-│  Retrieval  │─────▶│  Generation  │
-└─────────────┘      │     (LLM)    │
-                     └───────┬──────┘
-                             │
-                             ▼
-                     ┌──────────────┐
-                     │   Réponse    │
-                     └──────────────┘
+┌────────────────────┐
+│  Documents éducatifs│
+│ (Cours / Polycopiés)│
+└─────────┬──────────┘
+          │
+          ▼
+┌────────────────────┐
+│  Ingestion &        │
+│  Chunking pédagogique│
+└─────────┬──────────┘
+          │
+          ▼
+┌────────────────────┐
+│  Embeddings         │
+│ (SentenceTransformers)
+└─────────┬──────────┘
+          │
+          ▼
+┌────────────────────┐
+│  Index FAISS        │
+└─────────┬──────────┘
+          │
+          ▼
+┌────────────────────┐      ┌────────────────────┐
+│  Retrieval          │────▶ │  Génération        │
+│  (passages cours)   │      │  pédagogique (LLM) │
+└────────────────────┘      └─────────┬──────────┘
+                                      │
+                                      ▼
+                           ┌────────────────────┐
+                           │  Réponse explicative│
+                           │  + sources          │
+                           └────────────────────┘
+
 ```
 
 ## 🚀 Installation
@@ -75,7 +82,10 @@ Système de Question-Réponse basé sur des documents utilisant Retrieval-Augmen
 1. **Cloner le repository**
 
 ```bash
-git clone https://github.com/votre-username/rag-fastapi-streamlit.git
+git clone https://github.com/CherniNada12/Rag-Q-A-Fastapi-Streamlit-app.git
+or
+git clone https://github.com/MaysenChiha/Rag-Q-A-Fastapi-Streamlit-app.git
+
 cd rag-fastapi-streamlit
 ```
 
@@ -382,23 +392,13 @@ docker-compose logs -f
 Accéder aux métriques via :
 - http://localhost:8000/metrics (si configuré)
 
-## 🤝 Contribution
 
-Les contributions sont les bienvenues ! 
 
-1. Fork le projet
-2. Créer une branche (`git checkout -b feature/AmazingFeature`)
-3. Commit (`git commit -m 'Add AmazingFeature'`)
-4. Push (`git push origin feature/AmazingFeature`)
-5. Ouvrir une Pull Request
 
-## 📝 License
-
-Ce projet est sous licence MIT.
 
 ## 👥 Auteurs
 
-- Votre Nom - [@votre-username](https://github.com/votre-username)
+ - Nada Cherni & Maysen Chiha 
 
 ## 🙏 Remerciements
 
@@ -408,12 +408,4 @@ Ce projet est sous licence MIT.
 - [FAISS](https://github.com/facebookresearch/faiss)
 - [Hugging Face](https://huggingface.co/)
 
-## 📞 Support
 
-Pour toute question ou problème :
-- Ouvrir une [issue](https://github.com/votre-username/rag-fastapi-streamlit/issues)
-- Email : votre-email@example.com
-
----
-
-**⭐ N'oubliez pas de mettre une étoile si ce projet vous a été utile !**
