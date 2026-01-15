@@ -18,6 +18,36 @@ Ce projet vise à développer un Learning Assistant spécialisé, capable d’ac
 - [Déploiement](#déploiement)
 - [Tests](#tests)
 
+## Structure du projet
+
+RAG-FASTAPI-STREAMLIT/
+├── data/ # Données brutes et préparées
+├── notebooks/ # Notebooks pour exploration et test
+│ ├── 01_Data_Ingestion_and_Chunking.ipynb
+│ ├── 02_Embedding_and_FAISS_Index.ipynb
+│ ├── 03_Test_RAG_Pipeline.ipynb
+│ └── Demo_Learning_Assistant.ipynb
+├── src/
+│ ├── api/
+│ │ └── main.py # FastAPI backend
+│ ├── frontend/
+│ │ └── learning_app.py # Streamlit frontend
+│ └── modules/ # Modules de traitement et RAG
+│ ├── learning_config.py
+│ ├── chunking.py
+│ ├── embeddings.py
+│ ├── ingestion.py
+│ ├── retrieval.py
+│ └── learning_generator.py
+├── tests/ # Tests unitaires
+├── requirements.txt # Dépendances Python
+├── .env # Variables d'environnement
+├── start.sh # Script Linux/Mac pour lancer
+├── start.bat # Script Windows pour lancer
+├── README.md
+├── INTEGRATION_GUIDE.md
+└── MIGRATION_GUIDE.md
+
 ## ✨ Caractéristiques
 
 - 📤 **Upload de documents** (PDF, DOCX, TXT)
@@ -220,24 +250,7 @@ GET /list_documents
 DELETE /clear_index
 ```
 
-### Exemples avec curl
 
-```bash
-# Health check
-curl http://localhost:8000/health
-
-# Upload document
-curl -X POST "http://localhost:8000/upload_document" \
-  -F "file=@document.pdf"
-
-# Poser une question
-curl -X POST "http://localhost:8000/query" \
-  -H "Content-Type: application/json" \
-  -d '{
-    "question": "Quel est le sujet principal ?",
-    "top_k": 5
-  }'
-```
 
 ## 📓 Notebooks
 
