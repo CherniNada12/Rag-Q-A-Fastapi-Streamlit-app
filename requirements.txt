@@ -1,29 +1,50 @@
-# API & Web
+# === Core Framework ===
 fastapi==0.104.1
 uvicorn[standard]==0.24.0
 streamlit==1.28.1
 python-multipart==0.0.6
+pydantic==2.5.0
 
-# RAG & ML
+# === NLP & Embeddings ===
 sentence-transformers==2.2.2
-torch==2.1.1
 transformers==4.35.2
-faiss-cpu==1.7.4
-huggingface-hub==0.16.4
+torch==2.1.1
+tokenizers==0.15.0
 
-# Document Processing
+# === Vector Search ===
+faiss-cpu==1.7.4
+numpy==1.24.3
+
+# === Document Processing ===
 PyPDF2==3.0.1
 python-docx==1.1.0
 
-# Utilities
-pydantic==2.7.0
-numpy<2,>=1.24.0
-pandas<2,>=2.1.3
-packaging<24,>=23.2
-pillow<11,>=10.0.0
-python-dotenv==1.0.0
-requests==2.32.0
-
-# Optional (API LLM)
+# === LLM (optionnel) ===
 openai==1.3.7
-tiktoken==0.5.1
+tiktoken==0.5.2
+
+# === Utilities ===
+python-dotenv==1.0.0
+requests==2.31.0
+pandas==2.1.3
+
+# === Visualization (pour notebooks) ===
+matplotlib==3.8.2
+seaborn==0.13.0
+plotly==5.18.0
+scikit-learn==1.3.2
+
+# === Testing ===
+pytest==7.4.3
+pytest-cov==4.1.0
+pytest-asyncio==0.21.1
+
+# === Development ===
+black==23.12.0
+flake8==6.1.0
+mypy==1.7.1
+jupyter==1.0.0
+ipykernel==6.27.1
+
+# === Logging ===
+loguru==0.7.2

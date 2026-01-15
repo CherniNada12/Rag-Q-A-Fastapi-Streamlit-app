@@ -1,120 +1,119 @@
 @echo off
-setlocal enabledelayedexpansion
+chcp 65001 >nul
+cls
 
 echo ========================================
-echo    Systeme RAG - FastAPI + Streamlit
+echo 🚀 Learning Assistant RAG - Démarrage
 echo ========================================
 echo.
 
-REM Verifier Python
+REM Vérifier Python
 python --version >nul 2>&1
 if errorlevel 1 (
-    echo [ERREUR] Python n'est pas installe
+    echo ❌ Python n'est pas installé ou pas dans le PATH
     pause
     exit /b 1
 )
 
-echo [OK] Python detecte
-
-REM Creer l'environnement virtuel si necessaire
-if not exist "venv" (
-    echo [INFO] Creation de l'environnement virtuel...
+REM Créer l'environnement virtuel si nécessaire
+if not exist "venv\" (
+    echo ⚠️  Environnement virtuel non trouvé
+    echo Création de l'environnement virtuel...
     python -m venv venv
-    echo [OK] Environnement virtuel cree
+    echo ✅ Environnement virtuel créé
 )
 
 REM Activer l'environnement virtuel
-echo [INFO] Activation de l'environnement virtuel...
+echo Activation de l'environnement virtuel...
 call venv\Scripts\activate.bat
+echo ✅ Environnement activé
 
-REM Installer les dependances si necessaire
-if not exist "venv\installed" (
-    echo [INFO] Installation des dependances...
+REM Installer les dépendances
+if not exist "venv\.dependencies_installed" (
+    echo Installation des dépendances...
     python -m pip install --upgrade pip
     pip install -r requirements.txt
-    echo installed > venv\installed
-    echo [OK] Dependances installees
+    echo. > venv\.dependencies_installed
+    echo ✅ Dépendances installées
 )
 
-REM Creer les repertoires necessaires
+REM Créer les dossiers
+echo Vérification de la structure...
 if not exist "data\documents" mkdir data\documents
 if not exist "data\chunks" mkdir data\chunks
 if not exist "data\index" mkdir data\index
+echo ✅ Dossiers vérifiés
 
-REM Verifier le fichier .env
+REM Vérifier .env
 if not exist ".env" (
-    echo [INFO] Creation du fichier .env...
+    echo ⚠️  Fichier .env non trouvé
+    echo Création du fichier .env...
     (
-        echo PROJECT_NAME="RAG FastAPI Streamlit"
-        echo ENVIRONMENT="development"
-        echo DATA_DIR="./data"
-        echo DOCUMENTS_DIR="./data/documents"
-        echo CHUNKS_DIR="./data/chunks"
-        echo INDEX_DIR="./data/index"
+        echo # Configuration Learning Assistant RAG
+        echo EMBEDDING_MODEL="sentence-transformers/all-MiniLM-L6-v2"
+        echo LLM_MODEL="gpt2"
         echo CHUNK_SIZE=500
         echo CHUNK_OVERLAP=50
         echo TOP_K_RESULTS=5
-        echo EMBEDDING_MODEL="sentence-transformers/all-MiniLM-L6-v2"
-        echo LLM_MODEL="gpt2"
-        echo OPENAI_API_KEY=""
         echo API_HOST="0.0.0.0"
         echo API_PORT=8000
-        echo STREAMLIT_PORT=8501
+        echo OPENAI_API_KEY=""
     ) > .env
-    echo [OK] Fichier .env cree
+    echo ✅ Fichier .env créé
 )
 
 echo.
 echo ========================================
-echo    Systeme pret a demarrer!
+echo 🎓 Learning Assistant RAG est prêt !
 echo ========================================
 echo.
-echo Que voulez-vous demarrer ?
+
+REM Menu de démarrage
+echo Choisissez le mode de démarrage :
+echo 1) API seulement (FastAPI)
+echo 2) Interface seulement (Streamlit)
+echo 3) Les deux (recommandé)
 echo.
-echo 1) API FastAPI uniquement
-echo 2) Interface Streamlit uniquement
-echo 3) Les deux (API + Streamlit)
-echo 4) Tests avec Jupyter Notebook
-echo 5) Quitter
+set /p choice="Votre choix (1/2/3): "
+
+if "%choice%"=="1" goto start_api
+if "%choice%"=="2" goto start_streamlit
+if "%choice%"=="3" goto start_both
+echo Choix invalide
+pause
+exit /b 1
+
+:start_api
+echo.
+echo 🚀 Démarrage de l'API FastAPI...
+cd src\api
+uvicorn main:app --reload --host 0.0.0.0 --port 8000
+goto end
+
+:start_streamlit
+echo.
+echo 🚀 Démarrage de Streamlit...
+cd src\frontend
+streamlit run learning_app.py
+goto end
+
+:start_both
+echo.
+echo 🚀 Démarrage de l'API et de Streamlit...
 echo.
 
-set /p choice="Votre choix (1-5): "
+REM Démarrer l'API dans une nouvelle fenêtre
+start "FastAPI Server" cmd /k "cd src\api && uvicorn main:app --reload --host 0.0.0.0 --port 8000"
 
-if "%choice%"=="1" (
-    echo [INFO] Demarrage de l'API FastAPI...
-    cd src\api
-    python -m uvicorn main:app --reload --host 0.0.0.0 --port 8000
-    cd ..\..
-) else if "%choice%"=="2" (
-    echo [INFO] Demarrage de Streamlit...
-    cd src\frontend
-    streamlit run app.py
-    cd ..\..
-) else if "%choice%"=="3" (
-    echo [INFO] Demarrage de l'API et Streamlit...
-    echo [INFO] API sur http://localhost:8000
-    echo [INFO] Streamlit sur http://localhost:8501
-    
-    REM Demarrer l'API dans une nouvelle fenetre
-    start "API FastAPI" cmd /k "cd src\api && python -m uvicorn main:app --reload --host 0.0.0.0 --port 8000"
-    
-    REM Attendre 3 secondes
-    timeout /t 3 /nobreak >nul
-    
-    REM Demarrer Streamlit
-    cd src\frontend
-    streamlit run app.py
-    cd ..\..
-) else if "%choice%"=="4" (
-    echo [INFO] Demarrage de Jupyter Notebook...
-    jupyter notebook notebooks\
-) else if "%choice%"=="5" (
-    echo Au revoir!
-    exit /b 0
-) else (
-    echo [ERREUR] Choix invalide
-    pause
-    exit /b 1
-)
+REM Attendre que l'API démarre
+echo Attente du démarrage de l'API...
+timeout /t 5 /nobreak >nul
 
+REM Démarrer Streamlit
+cd src\frontend
+streamlit run learning_app.py
+
+:end
+echo.
+echo Arrêt du Learning Assistant RAG...
 pause

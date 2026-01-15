@@ -1,29 +1,30 @@
 from fastapi import FastAPI, UploadFile, File, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
-from typing import List, Dict
-import shutil
 from pathlib import Path
+import shutil
 import logging
 import sys
 
-# Ajouter le répertoire parent au path
+# Ajouter le chemin des modules
 sys.path.append(str(Path(__file__).parent.parent))
 
-from modules.config import config
 from modules.ingestion import DocumentIngestion
 from modules.chunking import TextChunker
-from modules.embeddings import EmbeddingModel
 from modules.retrieval import FAISSRetriever
 from modules.generation import ResponseGenerator
+from modules.config import config
 
-# Configuration logging
-logging.basicConfig(level=logging.INFO)
+# Configuration du logging
+logging.basicConfig(
+    level=logging.INFO,
+    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
+)
 logger = logging.getLogger(__name__)
 
-# Initialiser FastAPI
+# Initialisation FastAPI
 app = FastAPI(
-    title="RAG API",
+    title="RAG System API",
     description="API pour système RAG avec FAISS et LLM",
     version="1.0.0"
 )
@@ -37,219 +38,184 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# Initialiser les composants
-retriever = FAISSRetriever()
-generator = ResponseGenerator()
+# Initialisation des composants
 ingestion = DocumentIngestion()
 chunker = TextChunker()
+retriever = FAISSRetriever()
+generator = ResponseGenerator()
 
-# Charger l'index existant si disponible
-try:
-    retriever.load_index()
-    logger.info("Index FAISS chargé avec succès")
-except FileNotFoundError:
-    logger.info("Aucun index existant, un nouveau sera créé")
-
+# =========================
 # Modèles Pydantic
+# =========================
+
 class QueryRequest(BaseModel):
     question: str
     top_k: int = 5
 
 class QueryResponse(BaseModel):
     answer: str
-    sources: List[Dict]
+    retrieved_chunks: list
+    sources: list
     context_used: int
-    retrieved_chunks: List[Dict]
 
-class DocumentInfo(BaseModel):
-    filename: str
-    num_chunks: int
-    num_characters: int
+# =========================
+# Endpoints
+# =========================
 
-# Routes
 @app.get("/")
-async def root():
-    """Page d'accueil de l'API"""
+def read_root():
+    """Page d'accueil"""
     return {
-        "message": "Bienvenue sur l'API RAG",
-        "version": "1.0.0",
-        "endpoints": {
-            "upload": "/upload_document",
-            "query": "/query",
-            "documents": "/list_documents",
-            "health": "/health"
-        }
+        "message": "API RAG opérationnelle",
+        "docs": "/docs",
+        "health": "/health"
     }
 
 @app.get("/health")
-async def health_check():
-    """Vérification de santé du serveur"""
-    index_status = "loaded" if retriever.index is not None else "not_loaded"
+def health_check():
+    """Vérification de l'état du système"""
     num_vectors = retriever.index.ntotal if retriever.index else 0
     
     return {
         "status": "healthy",
-        "index_status": index_status,
         "num_vectors": num_vectors,
-        "embedding_model": config.EMBEDDING_MODEL,
-        "llm_model": config.LLM_MODEL
+        "embedding_model": retriever.embedding_model.model_name,
+        "llm_model": generator.model_name
     }
 
 @app.post("/upload_document")
 async def upload_document(file: UploadFile = File(...)):
     """
-    Upload et traitement d'un document
+    Upload et indexation d'un document
     
-    - Extrait le texte
-    - Crée des chunks
-    - Génère les embeddings
-    - Ajoute à l'index FAISS
+    Args:
+        file: Fichier PDF, DOCX ou TXT
+        
+    Returns:
+        Informations sur le document indexé
     """
     try:
-        # Sauvegarder le fichier
-        file_path = config.DOCUMENTS_DIR / file.filename
-        with open(file_path, "wb") as buffer:
+        # Vérifier l'extension
+        file_ext = Path(file.filename).suffix.lower()
+        if file_ext not in ['.pdf', '.txt', '.docx']:
+            raise HTTPException(
+                status_code=400,
+                detail=f"Format non supporté: {file_ext}"
+            )
+        
+        # Sauvegarder temporairement
+        temp_path = config.DOCUMENTS_DIR / file.filename
+        with open(temp_path, "wb") as buffer:
             shutil.copyfileobj(file.file, buffer)
         
-        logger.info(f"Fichier reçu : {file.filename}")
+        logger.info(f"📄 Document reçu: {file.filename}")
         
-        # 1. Extraction du texte
-        doc_info = ingestion.process_document(file_path)
-        logger.info(f"Texte extrait : {doc_info['num_characters']} caractères")
+        # 1. Ingestion
+        doc_info = ingestion.process_document(temp_path)
         
         # 2. Chunking
-        chunks_with_metadata = chunker.create_chunks_with_metadata(
+        chunks = chunker.create_chunks_with_metadata(
             doc_info['content'],
             doc_info['filename']
         )
-        logger.info(f"Chunks créés : {len(chunks_with_metadata)}")
         
         # 3. Embeddings
-        chunk_texts = [chunk['content'] for chunk in chunks_with_metadata]
+        chunk_texts = [c['content'] for c in chunks]
         embeddings = retriever.embedding_model.encode(chunk_texts)
-        logger.info(f"Embeddings générés : {embeddings.shape}")
         
-        # 4. Ajout à l'index
-        retriever.add_to_index(embeddings, chunks_with_metadata)
+        # 4. Indexation
+        retriever.add_to_index(embeddings, chunks)
         
         # 5. Sauvegarder l'index
         retriever.save_index()
         
+        logger.info(f"✅ Document indexé: {file.filename}")
+        
         return {
-            "status": "success",
-            "filename": file.filename,
-            "num_chunks": len(chunks_with_metadata),
+            "filename": doc_info['filename'],
+            "num_chunks": len(chunks),
             "num_characters": doc_info['num_characters'],
-            "total_vectors_in_index": retriever.index.ntotal
+            "total_vectors": retriever.index.ntotal
         }
         
     except Exception as e:
-        logger.error(f"Erreur lors de l'upload : {e}")
-        raise HTTPException(status_code=500, detail=str(e))
-
-@app.post("/query", response_model=QueryResponse)
-async def query_documents(request: QueryRequest):
-    """
-    Effectue une requête RAG
-    
-    - Recherche les chunks pertinents
-    - Génère une réponse avec le LLM
-    """
-    try:
-        if retriever.index is None:
-            raise HTTPException(
-                status_code=400,
-                detail="Aucun document indexé. Veuillez d'abord uploader des documents."
-            )
-        
-        logger.info(f"Question reçue : {request.question}")
-        
-        # 1. Recherche des chunks pertinents
-        retrieved_chunks = retriever.search(
-            request.question,
-            top_k=request.top_k
-        )
-        logger.info(f"Chunks récupérés : {len(retrieved_chunks)}")
-        
-        # 2. Génération de la réponse
-        response = generator.generate_answer(
-            request.question,
-            retrieved_chunks
-        )
-        logger.info("Réponse générée")
-        
-        return QueryResponse(
-            answer=response['answer'],
-            sources=response['sources'],
-            context_used=response['context_used'],
-            retrieved_chunks=retrieved_chunks
-        )
-        
-    except Exception as e:
-        logger.error(f"Erreur lors de la requête : {e}")
+        logger.error(f"Erreur upload: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
 @app.get("/list_documents")
-async def list_documents():
-    """Liste tous les documents indexés"""
+def list_documents():
+    """Liste les documents indexés"""
+    if not retriever.metadata:
+        return {"documents": [], "total": 0}
+    
+    # Grouper par document
+    docs_info = {}
+    for meta in retriever.metadata:
+        doc_name = meta['document_name']
+        if doc_name not in docs_info:
+            docs_info[doc_name] = {
+                'filename': doc_name,
+                'num_chunks': 0,
+                'total_characters': 0
+            }
+        docs_info[doc_name]['num_chunks'] += 1
+        docs_info[doc_name]['total_characters'] += meta.get('num_characters', 0)
+    
+    return {
+        "documents": list(docs_info.values()),
+        "total": len(docs_info)
+    }
+
+@app.post("/query", response_model=QueryResponse)
+def query_system(request: QueryRequest):
+    """
+    Pose une question au système RAG
+    
+    Args:
+        request: Question et paramètres
+        
+    Returns:
+        Réponse générée avec sources
+    """
     try:
-        if not retriever.metadata:
-            return {"documents": [], "total": 0}
+        if not request.question.strip():
+            raise HTTPException(status_code=400, detail="Question vide")
         
-        # Extraire les noms de documents uniques
-        document_names = list(set(
-            chunk['document_name'] for chunk in retriever.metadata
-        ))
+        logger.info(f"🔍 Question reçue: {request.question[:50]}...")
         
-        # Compter les chunks par document
-        documents_info = []
-        for doc_name in document_names:
-            chunks = [
-                chunk for chunk in retriever.metadata 
-                if chunk['document_name'] == doc_name
-            ]
-            documents_info.append({
-                "filename": doc_name,
-                "num_chunks": len(chunks),
-                "total_characters": sum(chunk['num_characters'] for chunk in chunks)
-            })
+        # 1. Recherche
+        retrieved_chunks = retriever.search(request.question, top_k=request.top_k)
         
-        return {
-            "documents": documents_info,
-            "total": len(documents_info),
-            "total_chunks": len(retriever.metadata)
-        }
+        if not retrieved_chunks:
+            return QueryResponse(
+                answer="Je n'ai pas trouvé d'information pertinente dans les documents.",
+                retrieved_chunks=[],
+                sources=[],
+                context_used=0
+            )
+        
+        # 2. Génération
+        result = generator.generate_answer(request.question, retrieved_chunks)
+        
+        logger.info(f"✅ Réponse générée avec {result['context_used']} chunks")
+        
+        return QueryResponse(
+            answer=result['answer'],
+            retrieved_chunks=retrieved_chunks,
+            sources=result['sources'],
+            context_used=result['context_used']
+        )
         
     except Exception as e:
-        logger.error(f"Erreur lors du listing : {e}")
+        logger.error(f"Erreur query: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
 @app.delete("/clear_index")
-async def clear_index():
-    """Supprime tous les documents de l'index"""
+def clear_index():
+    """Vide complètement l'index"""
     try:
-        retriever.index = None
-        retriever.metadata = []
-        
-        # Supprimer les fichiers d'index
-        if config.FAISS_INDEX_PATH.exists():
-            config.FAISS_INDEX_PATH.unlink()
-        if config.METADATA_PATH.exists():
-            config.METADATA_PATH.unlink()
-        
-        logger.info("Index supprimé")
-        return {"status": "success", "message": "Index cleared"}
-        
+        retriever.clear_index()
+        retriever.save_index()
+        return {"message": "Index vidé avec succès"}
     except Exception as e:
-        logger.error(f"Erreur lors de la suppression : {e}")
         raise HTTPException(status_code=500, detail=str(e))
-
-# Lancement du serveur
-if __name__ == "__main__":
-    import uvicorn
-    uvicorn.run(
-        "main:app",
-        host=config.API_HOST,
-        port=config.API_PORT,
-        reload=True
-    )
