@@ -9,7 +9,7 @@ Assistant pédagogique intelligent basé sur des documents éducatifs utilisant 
 
 Ce projet vise à développer un Learning Assistant spécialisé, capable d’accompagner les apprenants en répondant à leurs questions uniquement à partir de supports pédagogiques fournis (cours, polycopiés, FAQ, documents PDF/TXT).
 
-![Interface](assets/interface Rag.png)
+![Interface](interface Rag.png)
 
 ## 📋 Table des matières
 
