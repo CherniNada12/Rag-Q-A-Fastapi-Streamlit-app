@@ -1,55 +1,62 @@
-## **🎓 RAG – Learning Assistant Spécialisé**
+# 🎓 RAG – Learning Assistant Spécialisé
 
-🧠 Domaine : Éducation / Formation numérique
-
-FastAPI + Streamlit
+🧠 **Domaine** : Éducation / Formation numérique  
+**Stack** : FastAPI + Streamlit
 
 Assistant pédagogique intelligent basé sur des documents éducatifs utilisant Retrieval-Augmented Generation (RAG), exposé via FastAPI et accessible par une interface Streamlit.
+
 ## 🎯 Objectif pédagogique
 
-Ce projet vise à développer un Learning Assistant spécialisé, capable d’accompagner les apprenants en répondant à leurs questions uniquement à partir de supports pédagogiques fournis (cours, polycopiés, FAQ, documents PDF/TXT).
+Ce projet vise à développer un Learning Assistant spécialisé, capable d'accompagner les apprenants en répondant à leurs questions uniquement à partir de supports pédagogiques fournis (cours, polycopiés, FAQ, documents PDF/TXT).
 
 ![Interface RAG](interfaceRag.png)
 
 ## 📋 Table des matières
 
-- [Caractéristiques](#caractéristiques)
-- [Architecture](#architecture)
-- [Installation](#installation)
-- [Utilisation](#utilisation)
-- [API Documentation](#api-documentation)
-- [Déploiement](#déploiement)
-- [Tests](#tests)
+- [Structure du projet](#structure-du-projet)
+- [Caractéristiques](#-caractéristiques)
+- [Architecture](#-architecture)
+- [Installation](#-installation)
+- [Utilisation](#-utilisation)
+- [Notebooks](#-notebooks)
+- [Tests](#-tests)
+- [Configuration](#️-configuration)
+- [Déploiement](#-déploiement)
+- [Monitoring](#-monitoring)
+- [Auteurs](#-auteurs)
+- [Remerciements](#-remerciements)
 
 ## Structure du projet
 
+```
 RAG-FASTAPI-STREAMLIT/
-├── data/ # Données brutes et préparées
-├── notebooks/ # Notebooks pour exploration et test
-│ ├── 01_Data_Ingestion_and_Chunking.ipynb
-│ ├── 02_Embedding_and_FAISS_Index.ipynb
-│ ├── 03_Test_RAG_Pipeline.ipynb
-│ └── Demo_Learning_Assistant.ipynb
+├── data/                           # Données brutes et préparées
+├── notebooks/                      # Notebooks pour exploration et test
+│   ├── 01_Data_Ingestion_and_Chunking.ipynb
+│   ├── 02_Embedding_and_FAISS_Index.ipynb
+│   ├── 03_Test_RAG_Pipeline.ipynb
+│   └── Demo_Learning_Assistant.ipynb
 ├── src/
-│ ├── api/
-│ │ └── main.py # FastAPI backend
-│ ├── frontend/
-│ │ └── learning_app.py # Streamlit frontend
-│ └── modules/ # Modules de traitement et RAG
-│ ├── learning_config.py
-│ ├── chunking.py
-│ ├── embeddings.py
-│ ├── ingestion.py
-│ ├── retrieval.py
-│ └── learning_generator.py
-├── tests/ # Tests unitaires
-├── requirements.txt # Dépendances Python
-├── .env # Variables d'environnement
-├── start.sh # Script Linux/Mac pour lancer
-├── start.bat # Script Windows pour lancer
+│   ├── api/
+│   │   └── main.py                # FastAPI backend
+│   ├── frontend/
+│   │   └── learning_app.py        # Streamlit frontend
+│   └── modules/                   # Modules de traitement et RAG
+│       ├── learning_config.py
+│       ├── chunking.py
+│       ├── embeddings.py
+│       ├── ingestion.py
+│       ├── retrieval.py
+│       └── learning_generator.py
+├── tests/                         # Tests unitaires
+├── requirements.txt               # Dépendances Python
+├── .env                          # Variables d'environnement
+├── start.sh                      # Script Linux/Mac pour lancer
+├── start.bat                     # Script Windows pour lancer
 ├── README.md
 ├── INTEGRATION_GUIDE.md
 └── MIGRATION_GUIDE.md
+```
 
 ## ✨ Caractéristiques
 
@@ -80,7 +87,7 @@ RAG-FASTAPI-STREAMLIT/
           ▼
 ┌────────────────────┐
 │  Embeddings         │
-│ (SentenceTransformers)
+│ (SentenceTransformers)│
 └─────────┬──────────┘
           │
           ▼
@@ -99,7 +106,6 @@ RAG-FASTAPI-STREAMLIT/
                            │  Réponse explicative│
                            │  + sources          │
                            └────────────────────┘
-
 ```
 
 ## 🚀 Installation
@@ -112,17 +118,17 @@ RAG-FASTAPI-STREAMLIT/
 
 ### Installation locale
 
-1. **Cloner le repository**
+#### 1. Cloner le repository
 
 ```bash
 git clone https://github.com/CherniNada12/Rag-Q-A-Fastapi-Streamlit-app.git
-or
+# ou
 git clone https://github.com/MaysenChiha/Rag-Q-A-Fastapi-Streamlit-app.git
 
 cd rag-fastapi-streamlit
 ```
 
-2. **Créer l'environnement virtuel**
+#### 2. Créer l'environnement virtuel
 
 ```bash
 python -m venv venv
@@ -131,13 +137,13 @@ source venv/bin/activate  # Linux/Mac
 venv\Scripts\activate  # Windows
 ```
 
-3. **Installer les dépendances**
+#### 3. Installer les dépendances
 
 ```bash
 pip install -r requirements.txt
 ```
 
-4. **Configurer les variables d'environnement**
+#### 4. Configurer les variables d'environnement
 
 Copier `.env.example` vers `.env` et ajuster les valeurs :
 
@@ -145,7 +151,7 @@ Copier `.env.example` vers `.env` et ajuster les valeurs :
 cp .env.example .env
 ```
 
-5. **Créer la structure des répertoires**
+#### 5. Créer la structure des répertoires
 
 ```bash
 mkdir -p data/{documents,chunks,index}
@@ -162,9 +168,9 @@ cd src/api
 uvicorn main:app --reload --port 8000
 ```
 
-L'API sera accessible sur : http://localhost:8000
-
-Documentation interactive : http://localhost:8000/docs
+**Accès :**
+- API : http://localhost:8000
+- Documentation interactive : http://localhost:8000/docs
 
 #### 2. Lancer l'interface Streamlit
 
@@ -175,7 +181,8 @@ cd src/frontend
 streamlit run app.py
 ```
 
-L'interface sera accessible sur : http://localhost:8501
+**Accès :**
+- Interface : http://localhost:8501
 
 ### Mode Docker
 
@@ -185,7 +192,7 @@ L'interface sera accessible sur : http://localhost:8501
 docker-compose up --build
 ```
 
-Services disponibles :
+**Services disponibles :**
 - API : http://localhost:8000
 - Frontend : http://localhost:8501
 
@@ -195,25 +202,24 @@ Services disponibles :
 docker-compose down
 ```
 
-
 ## 📓 Notebooks
 
 Trois notebooks Jupyter sont fournis pour explorer le pipeline :
 
-1. **01_Data_Ingestion_and_Chunking.ipynb**
-   - Extraction de texte
-   - Découpage en chunks
-   - Analyse des documents
+### 1. 01_Data_Ingestion_and_Chunking.ipynb
+- Extraction de texte
+- Découpage en chunks
+- Analyse des documents
 
-2. **02_Embedding_and_FAISS_Index.ipynb**
-   - Génération d'embeddings
-   - Création de l'index FAISS
-   - Tests de similarité
+### 2. 02_Embedding_and_FAISS_Index.ipynb
+- Génération d'embeddings
+- Création de l'index FAISS
+- Tests de similarité
 
-3. **03_Test_RAG_Pipeline.ipynb**
-   - Pipeline complet
-   - Tests de questions-réponses
-   - Évaluation des performances
+### 3. 03_Test_RAG_Pipeline.ipynb
+- Pipeline complet
+- Tests de questions-réponses
+- Évaluation des performances
 
 ### Lancer les notebooks
 
@@ -277,26 +283,26 @@ OPENAI_API_KEY=your-key-here
 
 ### Déploiement sur serveur VPS
 
-1. **Cloner le projet sur le serveur**
+#### 1. Cloner le projet sur le serveur
 
 ```bash
 git clone https://github.com/votre-username/rag-fastapi-streamlit.git
 cd rag-fastapi-streamlit
 ```
 
-2. **Configurer les variables d'environnement**
+#### 2. Configurer les variables d'environnement
 
 ```bash
 nano .env
 ```
 
-3. **Lancer avec Docker Compose**
+#### 3. Lancer avec Docker Compose
 
 ```bash
 docker-compose up -d
 ```
 
-4. **Vérifier les logs**
+#### 4. Vérifier les logs
 
 ```bash
 docker-compose logs -f
@@ -349,13 +355,10 @@ docker-compose logs -f
 Accéder aux métriques via :
 - http://localhost:8000/metrics (si configuré)
 
-
-
-
-
 ## 👥 Auteurs
 
- - Nada Cherni & Maysen Chiha 
+- **Nada Cherni** - [GitHub](https://github.com/CherniNada12)
+- **Maysen Chiha** - [GitHub](https://github.com/MaysenChiha)
 
 ## 🙏 Remerciements
 
@@ -365,4 +368,4 @@ Accéder aux métriques via :
 - [FAISS](https://github.com/facebookresearch/faiss)
 - [Hugging Face](https://huggingface.co/)
 
-
+---
