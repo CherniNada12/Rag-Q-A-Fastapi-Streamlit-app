@@ -1,4 +1,4 @@
-**##🎓 RAG – Learning Assistant Spécialisé**
+## **🎓 RAG – Learning Assistant Spécialisé**
 
 🧠 Domaine : Éducation / Formation numérique
 
