@@ -80,31 +80,32 @@ RAG-FASTAPI-STREAMLIT/
           │
           ▼
 ┌──────────────────────┐
-│  Ingestion &         │
+│     Ingestion &      │
 │  Chunking pédagogique│
 └─────────┬────────────┘
           │
           ▼
 ┌───────────────────────┐
-│  Embeddings           │
+│      Embeddings       │
 │ (SentenceTransformers)│
 └─────────┬─────────────┘
           │
           ▼
-┌─────────────────────┐
-│  Index FAISS        │
-└─────────┬───────────┘
+┌──────────────────────┐
+│     Index FAISS      │
+└─────────┬────────────┘
           │
           ▼
 ┌────────────────────┐      ┌────────────────────┐
-│  Retrieval         │────▶ │ Génération        │
+│      Retrieval     │───>  │     Génération     │
 │  (passages cours)  │      │  pédagogique (LLM) │
 └────────────────────┘      └─────────┬──────────┘
                                       │
                                       ▼
                            ┌─────────────────────┐
                            │  Réponse explicative│
-                           │  + sources          │
+                           │          +          │
+                           │        sources      │
                            └─────────────────────┘
 ```
 
