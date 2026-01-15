@@ -193,65 +193,6 @@ Services disponibles :
 docker-compose down
 ```
 
-## 🔌 API Documentation
-
-### Endpoints principaux
-
-#### 1. Health Check
-
-```bash
-GET /health
-```
-
-Retourne le statut de l'API et des informations sur l'index.
-
-#### 2. Upload de document
-
-```bash
-POST /upload_document
-Content-Type: multipart/form-data
-
-{
-  "file": <fichier>
-}
-```
-
-#### 3. Query (Question)
-
-```bash
-POST /query
-Content-Type: application/json
-
-{
-  "question": "Votre question ici",
-  "top_k": 5
-}
-```
-
-**Réponse :**
-
-```json
-{
-  "answer": "La réponse générée...",
-  "sources": [...],
-  "context_used": 3,
-  "retrieved_chunks": [...]
-}
-```
-
-#### 4. Liste des documents
-
-```bash
-GET /list_documents
-```
-
-#### 5. Supprimer l'index
-
-```bash
-DELETE /clear_index
-```
-
-
 
 ## 📓 Notebooks
 
